@@ -54,7 +54,7 @@ const PopUp = ({ show, handleClose, type, data }: PopupTypes) => {
                   Profile_Picture: values.Profile_Picture,
                 }));
                 handleClose();
-              };
+              }
             }, 400);
           }}
         >

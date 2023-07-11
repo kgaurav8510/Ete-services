@@ -10,5 +10,6 @@ npm run dev
 ## Backend
 
 ```sh
+cd backend
 npm run start:local
 ```
