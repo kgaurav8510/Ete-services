@@ -22,7 +22,9 @@ const initialState: EmployeeState = {
 export const getEmployeeAction = createAsyncThunk(
   "employees/getEmployees",
   async (_: void, thunkAPI) => {
-    const response: any = await fetch(`http://localhost:4000/api/user/getUser`).then(res => res.json());
+    const response: any = await fetch(
+      `http://localhost:4000/api/user/getUser`
+    ).then((res) => res.json());
     if (response.data) return response.data;
     return thunkAPI.rejectWithValue(response);
   }
@@ -31,13 +33,16 @@ export const getEmployeeAction = createAsyncThunk(
 export const createEmployeeAction = createAsyncThunk(
   "employees/createEmployees",
   async (employeeData: any, thunkAPI) => {
-    const response: any = await fetch("http://localhost:4000/api/user/register", {
-      method: "POST", 
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(employeeData),
-    }).then(res => res.json());
+    const response: any = await fetch(
+      "http://localhost:4000/api/user/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(employeeData),
+      }
+    ).then((res) => res.json());
     if (response.data) return response.data;
     return thunkAPI.rejectWithValue(response);
   }
@@ -46,13 +51,16 @@ export const createEmployeeAction = createAsyncThunk(
 export const editEmployeeAction = createAsyncThunk(
   "employees/editEmployees",
   async (updatedEmployee: any, thunkAPI) => {
-    const response: any = await fetch("http://localhost:4000/api/user/updateUser", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json", 
-      },
-      body: JSON.stringify(updatedEmployee),
-    }).then(res => res.json());
+    const response: any = await fetch(
+      "http://localhost:4000/api/user/updateUser",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedEmployee),
+      }
+    ).then((res) => res.json());
     if (response.data) return response.data;
     return thunkAPI.rejectWithValue(response);
   }
@@ -66,13 +74,13 @@ export const deleteEmployeeAction = createAsyncThunk(
       {
         method: "DELETE",
       }
-    ).then(res => res.json());
+    ).then((res) => res.json());
     if (response.data) return response.data;
     return thunkAPI.rejectWithValue(response);
   }
 );
 
-export const employeeSlice :any= createSlice({
+export const employeeSlice: any = createSlice({
   name: "employee",
   initialState,
   reducers: {},
@@ -106,13 +114,15 @@ export const employeeSlice :any= createSlice({
         state.isLoading = true;
       })
       .addCase(editEmployeeAction.fulfilled, (state, action) => {
-        state.employees = [...state.employees.map(employee => {
-          if(employee?.id === action.payload.id){
-            return action.payload
-          } else {
-            return employee
-          }
-        })];
+        state.employees = [
+          ...state.employees.map((employee) => {
+            if (employee?.id === action.payload.id) {
+              return action.payload;
+            } else {
+              return employee;
+            }
+          }),
+        ];
         state.isLoading = false;
       })
       .addCase(editEmployeeAction.rejected, (state) => {

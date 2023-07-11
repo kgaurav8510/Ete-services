@@ -1,11 +1,9 @@
+import { useState } from "react";
 import { Modal } from "react-bootstrap";
 import { Formik } from "formik";
 import { Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import {
-  createEmployeeAction,
-  editEmployeeAction,
-} from "../redux/features/EmployeesSlice";
+import { createEmployeeAction, editEmployeeAction } from "../redux/features/EmployeesSlice";
 import { countryList } from "../constant/data";
 import Form from 'react-bootstrap/Form';
 
@@ -18,11 +16,53 @@ interface PopupTypes {
 
 const PopUp = ({ show, handleClose, type, data }: PopupTypes) => {
   const dispatch: any = useDispatch();
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files && event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (values: any, { setSubmitting }: any) => {
+    try {
+      console.log('value', values)
+      const payload = {
+        FullName: values.fullName,
+        Email: values.email,
+        Country: values.country,
+        DOB: values.DOB,
+        Profile_Picture: filePreview || ""
+      };
+
+      if (type === "edit") {
+        payload.id = data?.id;
+        await dispatch(editEmployeeAction(payload));
+      } else {
+        await dispatch(createEmployeeAction(payload));
+      }
+
+      handleClose();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Modal show={show} onHide={handleClose} className="userFormModel">
       <Modal.Header closeButton className="userFormModel__header">
         <Modal.Title className="userFormModel__title">
-          Create Employee 
+          Create Employee
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -30,33 +70,10 @@ const PopUp = ({ show, handleClose, type, data }: PopupTypes) => {
           initialValues={{
             fullName: data?.FullName || "",
             email: data?.Email || "",
-            country: data?.Country ||  "",
-            Profile_Picture: data?.Profile_Picture || "",
+            country: data?.Country || "",
             DOB: data?.DOB || ""
           }}
-          onSubmit={(values) => {
-            setTimeout(() => {
-              console.log(values, "THIS IS VALUES");
-              if (type === "edit") {
-                dispatch(editEmployeeAction({
-                  id: data?.id,
-                  FullName: values.fullName,
-                  Email: values.email,
-                  DOB: values.DOB,
-                  Profile_Picture: values.Profile_Picture,
-                }));
-                handleClose();
-              } else{
-                dispatch(createEmployeeAction({
-                  FullName: values.fullName,
-                  Email: values.email,
-                  DOB: values.DOB,
-                  Profile_Picture: values.Profile_Picture,
-                }));
-                handleClose();
-              }
-            }, 400);
-          }}
+          onSubmit={handleSubmit}
         >
           {({
             values,
@@ -77,16 +94,16 @@ const PopUp = ({ show, handleClose, type, data }: PopupTypes) => {
                   className="form-control"
                 />
               </div>
-                <div className="form-group">
-                  <label>DOB</label>
-                  <input
-                    type="date"
-                    name="DOB"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    value={values.DOB}
-                    className="form-control"
-                  />
+              <div className="form-group">
+                <label>DOB</label>
+                <input
+                  type="date"
+                  name="DOB"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.DOB}
+                  className="form-control"
+                />
               </div>
 
               <div className="form-group">
@@ -98,35 +115,47 @@ const PopUp = ({ show, handleClose, type, data }: PopupTypes) => {
                   onBlur={handleBlur}
                   value={values.email}
                   className="form-control"
-                  />
+                />
               </div>
               <div className="form-group">
                 <label>Country</label>
-                <Form.Select aria-label="Select country" name='country' value={values.country || 'India'} onChange={handleChange} onBlur={handleBlur}>
-                  {countryList.map((country: any) =>{
-                    return <option key={country.name} value={country.name} onChange={handleChange} onBlur={handleBlur}>{country.name}</option>
-                  })}
+                <Form.Select
+                  aria-label="Select country"
+                  name="country"
+                  value={values.country || 'India'}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                >
+                  {countryList.map((country: any) => (
+                    <option key={country.name} value={country.name}>
+                      {country.name}
+                    </option>
+                  ))}
                 </Form.Select>
               </div>
 
               <div className="form-group">
                 <label>Profile Picture</label>
                 <input
-                type="url"
-                name="Profile_Picture"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.Profile_Picture}
-                className="form-control"
+                  type="file"
+                  name="Profile_Picture"
+                  onChange={(event) => {
+                    handleChange(event);
+                    handleFileChange(event);
+                  }}
+                  onBlur={handleBlur}
+                  className="form-control"
                 />
               </div>
 
+              {/* {filePreview && (
+                <div className="form-group">
+                  <img src={filePreview} alt="Preview" className="preview-image" />
+                </div>
+              )} */}
+
               <div className="userFormModel__action">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="button"
-                >
+                <Button type="submit" disabled={isSubmitting} className="button">
                   Submit
                 </Button>
               </div>
